@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Riya 💖</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+ font-family:'Segoe UI',sans-serif;
+ background:#0b0f1a;
+ color:#fff;
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ height:100vh;
+ overflow:hidden;
+ text-align:center;
+}
+
+/* BACKGROUND PARTICLES */
+.bg{
+ position:absolute;
+ width:100%;
+ height:100%;
+ overflow:hidden;
+ z-index:-1;
+}
+.bg span{
+ position:absolute;
+ width:2px;
+ height:2px;
+ background:#fff;
+ opacity:0.5;
+ animation:float 10s linear infinite;
+}
+@keyframes float{
+ from{transform:translateY(100vh)}
+ to{transform:translateY(-10vh)}
+}
+
+/* SCREEN */
+.screen{
+ position:absolute;
+ width:100%;
+ height:100%;
+ display:flex;
+ flex-direction:column;
+ justify-content:center;
+ align-items:center;
+ transition:0.6s;
+}
+.hidden{opacity:0;pointer-events:none}
+
+/* BUTTON */
+button{
+ padding:12px 25px;
+ border:none;
+ border-radius:20px;
+ background:linear-gradient(45deg,#ff4e50,#fc913a);
+ color:#fff;
+ font-size:16px;
+}
+
+/* GLOW */
+.glow{
+ animation:glow 1.5s infinite alternate;
+}
+@keyframes glow{
+ from{text-shadow:0 0 10px #fff}
+ to{text-shadow:0 0 35px #ff4e50}
+}
+
+/* CARD */
+.card{
+ width:260px;
+ height:160px;
+ perspective:1000px;
+}
+.inner{
+ width:100%;
+ height:100%;
+ position:relative;
+ transform-style:preserve-3d;
+ transition:0.6s;
+}
+.flip{transform:rotateY(180deg)}
+
+.front,.back{
+ position:absolute;
+ width:100%;
+ height:100%;
+ backface-visibility:hidden;
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ border-radius:15px;
+}
+.front{background:#111}
+.back{
+ background:linear-gradient(45deg,#ff4e50,#fc913a);
+ transform:rotateY(180deg);
+ padding:10px;
+}
+
+/* IMAGE */
+#riya{
+ width:230px;
+ border-radius:20px;
+ margin-top:15px;
+ opacity:0;
+ transform:scale(0.7);
+ transition:1.2s;
+}
+.show{
+ opacity:1;
+ transform:scale(1);
+}
+
+/* CANVAS */
+canvas{position:absolute;top:0;left:0}
+
+/* CONFETTI */
+.confetti{
+ position:absolute;
+ width:6px;
+ height:6px;
+ animation:fall linear forwards;
+}
+@keyframes fall{
+ to{transform:translateY(110vh) rotate(720deg)}
+}
+</style>
+</head>
+
+<body>
+
+<div class="bg" id="bg"></div>
+
+<!-- START -->
+<div id="start" class="screen">
+ <h2 class="glow">Riya, ek chhota sa surprise khelogi? 😏</h2>
+ <button onclick="startGame()">Start</button>
+</div>
+
+<!-- CARD -->
+<div id="cardScreen" class="screen hidden">
+ <div class="card" id="card" onclick="flipCard()">
+  <div id="inner" class="inner">
+    <div class="front glow">Tap to open 🎴</div>
+    <div class="back glow" id="cardText"></div>
+  </div>
+ </div>
+</div>
+
+<!-- FINAL -->
+<div id="final" class="screen hidden">
+ <canvas id="canvas"></canvas>
+ <h1 class="glow">🎉 HAPPY BIRTHDAY RIYA 🎂</h1>
+ <img src="riya.jpg" id="riya">
+ <div id="msg" class="glow"></div>
+</div>
+
+<audio id="music" src="music.mp3"></audio>
+
+<script>
+
+/* BACKGROUND PARTICLES */
+for(let i=0;i<60;i++){
+ let s=document.createElement("span");
+ s.style.left=Math.random()*100+"%";
+ s.style.animationDuration=(Math.random()*5+5)+"s";
+ document.getElementById("bg").appendChild(s);
+}
+
+/* DATA */
+let texts=[
+"Aap bina reason Gussa karti ho  😂",
+"Kabhi bina reason ke Muh fula leti ho 😤😂",
+"Par sabse zyada caring bhi hai 💖",
+"Aur haan… Aap Chudel ho 😜"
+];
+let i=0;
+
+/* START */
+function startGame(){
+ start.classList.add("hidden");
+ setTimeout(()=>{
+  cardScreen.classList.remove("hidden");
+  showCard();
+ },500);
+}
+
+/* SHOW CARD */
+function showCard(){
+ cardText.innerHTML=texts[i];
+}
+
+/* FLIP */
+function flipCard(){
+ inner.classList.toggle("flip");
+ if(inner.classList.contains("flip")){
+  setTimeout(()=>{
+   inner.classList.remove("flip");
+   i++;
+   if(i<texts.length){
+    showCard();
+   }else{
+    showFinal();
+   }
+  },1400);
+ }
+}
+
+/* FINAL */
+function showFinal(){
+ cardScreen.classList.add("hidden");
+ final.classList.remove("hidden");
+
+ let m=document.getElementById("music");
+ m.play().catch(()=>{
+  document.body.addEventListener("click",()=>m.play(),{once:true});
+ });
+
+ setTimeout(()=>riya.classList.add("show"),800);
+
+ let msgText=[
+  "Aap meri life ka best part ho 💖",
+  "Aapke bina mn nhi lgta hai 😶",
+  "Hamesha khush raho meri pagli 😜"
+ ];
+ let j=0;
+ function type(){
+  if(j<msgText.length){
+   msg.innerHTML+=msgText[j]+"<br>";
+   j++;
+   setTimeout(type,1400);
+  }
+ }
+ type();
+
+ fireworks();
+ confetti();
+}
+
+/* FIREWORKS */
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+canvas.width=innerWidth;
+canvas.height=innerHeight;
+
+let particles=[];
+function fireworks(){
+ setInterval(()=>{
+  let x=Math.random()*canvas.width;
+  let y=Math.random()*canvas.height/2;
+  for(let i=0;i<60;i++){
+   particles.push({
+    x,y,
+    vx:(Math.random()-0.5)*7,
+    vy:(Math.random()-0.5)*7,
+    a:1,
+    color:`hsl(${Math.random()*360},100%,50%)`
+   });
+  }
+ },600);
+ animate();
+}
+
+function animate(){
+ ctx.fillStyle="rgba(0,0,0,0.2)";
+ ctx.fillRect(0,0,canvas.width,canvas.height);
+
+ particles.forEach((p,i)=>{
+  p.x+=p.vx;
+  p.y+=p.vy;
+  p.a-=0.02;
+  ctx.fillStyle=p.color;
+  ctx.globalAlpha=p.a;
+  ctx.fillRect(p.x,p.y,2,2);
+  if(p.a<=0)particles.splice(i,1);
+ });
+
+ ctx.globalAlpha=1;
+ requestAnimationFrame(animate);
+}
+
+/* CONFETTI */
+function confetti(){
+ setInterval(()=>{
+  let d=document.createElement("div");
+  d.className="confetti";
+  d.style.left=Math.random()*100+"%";
+  d.style.background=`hsl(${Math.random()*360},100%,50%)`;
+  d.style.animationDuration=(Math.random()*3+2)+"s";
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(),5000);
+ },120);
+}
+
+</script>
+
+</body>
+</html>
